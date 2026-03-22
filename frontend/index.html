@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Inventory Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --primary-light: #dcfce7;
+            --primary-muted: #86efac;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #16a34a;
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #f1f5f9;
+            --bg: #f8fafc;
+            --bg-subtle: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-focus: #16a34a;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --transition: all 0.18s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ─────────────────────────────── */
+        .sidebar {
+            width: 256px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+        .logo {
+            padding: 22px 20px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .logo-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            letter-spacing: -0.01em;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: #475569;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 10px;
+        }
+
+        .nav-section-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #334155;
+            padding: 8px 10px 4px;
+            margin-top: 4px;
+        }
+
+        .menu-item {
+            padding: 9px 12px;
+            margin: 2px 0;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--sidebar-text);
+            user-select: none;
+        }
+
+        .menu-item svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            color: #cbd5e1;
+        }
+
+        .menu-item.active {
+            background: rgba(22, 163, 74, 0.15);
+            color: #4ade80;
+        }
+
+        .menu-item.active svg {
+            opacity: 1;
+        }
+
+        .user-info {
+            padding: 14px 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-info .user-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 0.85rem;
+        }
+
+        .user-info .user-role {
+            color: #475569;
+            font-size: 0.75rem;
+        }
+
+        .user-info button {
+            margin-top: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .user-info button:hover {
+            background: rgba(239, 68, 68, 0.18);
+        }
+
+        /* ── Main Content ─────────────────────────── */
+        .main-content {
+            margin-left: 256px;
+            flex: 1;
+            padding: 32px 36px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+            line-height: 1.3;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-size: 0.875rem;
+        }
+
+        /* ── Cards ────────────────────────────────── */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .stat-card.primary::before { background: #16a34a; }
+        .stat-card.success::before { background: #0ea5e9; }
+        .stat-card.warning::before { background: #f59e0b; }
+        .stat-card.danger::before  { background: #ef4444; }
+
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin: 8px 0 4px;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stat-card.primary .stat-value { color: #16a34a; }
+        .stat-card.success .stat-value { color: #0ea5e9; }
+        .stat-card.warning .stat-value { color: #d97706; }
+        .stat-card.danger .stat-value  { color: #ef4444; }
+
+        /* ── Buttons ──────────────────────────────── */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 1px 3px rgba(22,163,74,0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 4px 10px rgba(22,163,74,0.35);
+        }
+
+        .btn-success {
+            background: #0ea5e9;
+            color: white;
+            box-shadow: 0 1px 3px rgba(14,165,233,0.3);
+        }
+
+        .btn-success:hover {
+            background: #0284c7;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 1px 3px rgba(239,68,68,0.25);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: var(--bg-subtle);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* ── Forms ────────────────────────────────── */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.83rem;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--card-bg);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        /* ── Tables ───────────────────────────────── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 11px 14px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--bg-subtle);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tbody tr {
+            transition: background 0.12s;
+        }
+
+        tbody tr:hover td {
+            background: var(--bg-subtle);
+        }
+
+        /* ── Badges ───────────────────────────────── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef9c3; color: #92400e; }
+        .badge-danger  { background: #fee2e2; color: #b91c1c; }
+        .badge-info    { background: #e0f2fe; color: #0369a1; }
+
+        /* ── Login Screen ─────────────────────────── */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            background-image: radial-gradient(ellipse at 30% 50%, rgba(22,163,74,0.08) 0%, transparent 60%),
+                              radial-gradient(ellipse at 70% 20%, rgba(14,165,233,0.06) 0%, transparent 50%);
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h2 {
+            margin-bottom: 6px;
+            color: var(--text);
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .login-box .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 28px;
+        }
+
+        /* ── Alerts ───────────────────────────────── */
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 18px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* ── Upload Area ──────────────────────────── */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--bg-subtle);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: #f0fdf4;
+        }
+
+        /* ── Search Box ───────────────────────────── */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--card-bg);
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+        }
+
+        /* ── Modal ────────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,23,42,0.55);
+            backdrop-filter: blur(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* ── Misc ─────────────────────────────────── */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 0.75s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ── Filter / Tab Buttons ─────────────────── */
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--card-bg);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* ── Dividers & misc helpers ──────────────── */
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* ── Responsive ───────────────────────────── */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px 16px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Print ────────────────────────────────── */
+        @media print {
+            @page { margin: 1cm; size: A4; }
+
+            body { background: white; }
+
+            .sidebar { display: none; }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .btn, .menu-item { display: none !important; }
+
+            .page-header {
+                border-bottom: 2px solid #16a34a;
+                padding-bottom: 14px;
+                margin-bottom: 20px;
+            }
+
+            .stats-grid {
+                page-break-inside: avoid;
+                border: 1px solid #ddd;
+                padding: 14px;
+                margin-bottom: 20px;
+                border-radius: 6px;
+            }
+
+            .stat-card {
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+
+            .card {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                margin-bottom: 20px;
+            }
+
+            table { border-collapse: collapse; font-size: 0.85rem; }
+
+            th {
+                background: #16a34a !important;
+                color: white !important;
+                padding: 8px !important;
+                border: 1px solid #ddd;
+            }
+
+            td {
+                padding: 8px !important;
+                border: 1px solid #ddd;
+            }
+
+            tr:nth-child(even) { background: #f9f9f9; }
+
+            .badge { border: 1px solid #333; padding: 2px 6px; }
+
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 28px;
+                padding-bottom: 14px;
+                border-bottom: 2px solid #16a34a;
+            }
+
+            .print-footer {
+                display: block !important;
+                margin-top: 28px;
+                padding-top: 14px;
+                border-top: 1px solid #ddd;
+                text-align: center;
+                font-size: 0.8rem;
+                color: #666;
+            }
+        }
+
+        .print-header, .print-footer { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const API_URL = 'http://localhost:5001/api';
+
+        // Login Screen Component
+        function LoginScreen({ onLogin }) {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+
+                try {
+                    const response = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        onLogin(data.user);
+                    } else {
+                        setError('Invalid username or password');
+                    }
+                } catch (err) {
+                    setError('Failed to connect to server');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="login-container">
+                    <div className="login-box">
+                        <div style={{textAlign: 'center', marginBottom: '24px'}}>
+                            <img src="logo.png" alt="Logo" style={{width: '60px', height: '60px', borderRadius: '12px', marginBottom: '14px'}} />
+                        </div>
+                        <h2>Welcome back</h2>
+                        <p className="login-subtitle">Sign in to PharmaSys</p>
+                        {error && <div className="alert alert-danger">{error}</div>}
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Username</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter your username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary" style={{width: '100%', padding: '10px', marginTop: '4px'}} disabled={loading}>
+                                {loading ? 'Signing in...' : 'Sign in'}
+                            </button>
+                        </form>
+                        <p style={{marginTop: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem'}}>
+                            Default credentials: admin / admin123
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        // Dashboard Component
+        function Dashboard({ onNavigate }) {
+            const [stats, setStats] = useState(null);
+            const [expiringItems, setExpiringItems] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                loadData();
+            }, []);
+
+            const loadData = async () => {
+                try {
+                    const [statsRes, expiringRes] = await Promise.all([
+                        fetch(`${API_URL}/dashboard/stats`, { credentials: 'include' }),
+                        fetch(`${API_URL}/inventory/expiring/30`, { credentials: 'include' })
+                    ]);
+
+                    const statsData = await statsRes.json();
+                    const expiringData = await expiringRes.json();
+
+                    setStats(statsData.stats);
+                    setExpiringItems(expiringData.items || []);
+                } catch (err) {
+                    console.error('Error loading dashboard:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return <div className="loading"><div className="spinner"></div>Loading dashboard...</div>;
+            }
+
+            return (
+                <div>
+                    <div className="print-header">
+                        <h1 style={{color: '#16a34a', marginBottom: '10px'}}>PHARMACY INVENTORY REPORT</h1>
+                        <p style={{fontSize: '1.1rem', margin: '5px 0'}}>PharmaSys Management System</p>
+                        <p style={{fontSize: '0.9rem', color: '#666'}}>Generated on: {new Date().toLocaleString()}</p>
+                    </div>
+
+                    <div className="page-header">
+                        <h1>Dashboard</h1>
+                        <p>Overview of your pharmacy inventory</p>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card primary">
+                            <div className="stat-label">Total Medicines</div>
+                            <div className="stat-value">{stats?.total_medicines || 0}</div>
+                        </div>
+                        <div className="stat-card success">
+                            <div className="stat-label">Stock Value</div>
+                            <div className="stat-value">{stats?.total_value || 0} MAD</div>
+                        </div>
+                        <div className="stat-card warning">
+                            <div className="stat-label">Expiring Soon (30d)</div>
+                            <div className="stat-value">{stats?.expiring_30_days || 0}</div>
+                        </div>
+                        <div className="stat-card danger">
+                            <div className="stat-label">Expired Items</div>
+                            <div className="stat-value">{stats?.expired || 0}</div>
+                        </div>
+                    </div>
+
+                    <div className="two-column">
+                        <div className="card">
+                            <h3>Today's Sales</h3>
+                            <p style={{fontSize: '2rem', fontWeight: 'bold', color: '#16a34a', margin: '20px 0'}}>
+                                {stats?.sales_today || 0}
+                            </p>
+                            <p style={{color: 'var(--text-muted)'}}>Units sold: {stats?.units_sold_today || 0}</p>
+                        </div>
+
+                        <div className="card">
+                            <h3>Quick Actions</h3>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px'}}>
+                                <button className="btn btn-primary" onClick={() => onNavigate('add-stock')}>Add New Stock</button>
+                                <button className="btn btn-success" onClick={() => onNavigate('sales')}>Record Sale</button>
+                                <button className="btn btn-secondary" onClick={() => window.print()}>Print Report</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {expiringItems.length > 0 && (
+                        <div className="card">
+                            <h3>Expiring Items & Alerts (Next 30 Days)</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Medicine</th>
+                                        <th>Batch</th>
+                                        <th>Quantity</th>
+                                        <th>Expiry Date</th>
+                                        <th>Days Left</th>
+                                        <th>Value (MAD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {expiringItems.slice(0, 15).map((item, idx) => (
+                                        <tr key={idx} style={{
+                                            background: item.days_until_expiry <= 0 ? '#fee2e2' :
+                                                       item.days_until_expiry <= 7 ? '#ffedd5' :
+                                                       item.days_until_expiry <= 15 ? '#fef9c3' : 'transparent'
+                                        }}>
+                                            <td>
+                                                <span style={{
+                                                    display: 'inline-block',
+                                                    width: '12px',
+                                                    height: '12px',
+                                                    borderRadius: '50%',
+                                                    background: item.days_until_expiry <= 0 ? '#d32f2f' :
+                                                               item.days_until_expiry <= 7 ? '#f57c00' :
+                                                               item.days_until_expiry <= 15 ? '#fbc02d' : '#388e3c'
+                                                }}></span>
+                                            </td>
+                                            <td><strong>{item.name}</strong> {item.dosage}</td>
+                                            <td>{item.batch_number}</td>
+                                            <td>{item.quantity} units</td>
+                                            <td>{item.expiry_date}</td>
+                                            <td>
+                                                <span className={`badge ${
+                                                    item.days_until_expiry <= 0 ? 'badge-danger' :
+                                                    item.days_until_expiry <= 7 ? 'badge-danger' :
+                                                    item.days_until_expiry <= 15 ? 'badge-warning' :
+                                                    'badge-success'
+                                                }`}>
+                                                    {item.days_until_expiry <= 0 ? 'EXPIRED' : `${item.days_until_expiry} days`}
+                                                </span>
+                                            </td>
+                                            <td>{((item.unit_price || 0) * item.quantity).toFixed(2)} MAD</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <p style={{marginTop: '15px', color: 'var(--text-muted)', fontSize: '0.9rem'}}>
+                                <span style={{display: 'inline-flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap'}}>
+                                    <span><span style={{display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: '#d32f2f', marginRight: '5px'}}></span> Expired</span>
+                                    <span><span style={{display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: '#f57c00', marginRight: '5px'}}></span> Critical (&lt;7 days)</span>
+                                    <span><span style={{display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: '#fbc02d', marginRight: '5px'}}></span> Warning (&lt;15 days)</span>
+                                    <span><span style={{display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: '#388e3c', marginRight: '5px'}}></span> Normal (&lt;30 days)</span>
+                                </span>
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="print-footer">
+                        <p>This report is confidential and intended for internal use only.</p>
+                        <p>PharmaSys - Pharmacy Inventory Management System</p>
+                        <p>Page printed on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
+                    </div>
+                </div>
+            );
+        }
+
+        // Inventory Component
+        function Inventory() {
+            const [inventory, setInventory] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [filter, setFilter] = useState('all');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [sortBy, setSortBy] = useState('name');
+
+            useEffect(() => {
+                loadInventory();
+            }, []);
+
+            const loadInventory = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/inventory/all`, { credentials: 'include' });
+                    const data = await response.json();
+                    setInventory(data.inventory || []);
+                } catch (err) {
+                    console.error('Error loading inventory:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const filteredInventory = inventory.filter(item => {
+                // Apply status filter
+                let passesFilter = true;
+                if (filter === 'expiring') passesFilter = item.days_until_expiry <= 60 && item.days_until_expiry > 0;
+                else if (filter === 'expired') passesFilter = item.days_until_expiry <= 0;
+                else if (filter === 'low_stock') passesFilter = item.quantity <= 10;
+                else if (filter === 'good') passesFilter = item.days_until_expiry > 60;
+
+                // Apply search filter
+                const passesSearch = searchQuery === '' ||
+                    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (item.generic_name && item.generic_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                    item.batch_number.toLowerCase().includes(searchQuery.toLowerCase());
+
+                return passesFilter && passesSearch;
+            });
+
+            // Group by medicine
+            const grouped = {};
+            filteredInventory.forEach(item => {
+                if (!grouped[item.medicine_id]) {
+                    grouped[item.medicine_id] = {
+                        name: item.name,
+                        generic_name: item.generic_name,
+                        dosage: item.dosage,
+                        batches: []
+                    };
+                }
+                grouped[item.medicine_id].batches.push(item);
+            });
+
+            // Sort medicines
+            const sortedMedicines = Object.values(grouped).sort((a, b) => {
+                if (sortBy === 'name') return a.name.localeCompare(b.name);
+                if (sortBy === 'stock') {
+                    const aTotal = a.batches.reduce((sum, batch) => sum + batch.quantity, 0);
+                    const bTotal = b.batches.reduce((sum, batch) => sum + batch.quantity, 0);
+                    return bTotal - aTotal;
+                }
+                if (sortBy === 'expiry') {
+                    const aMinDays = Math.min(...a.batches.map(b => b.days_until_expiry));
+                    const bMinDays = Math.min(...b.batches.map(b => b.days_until_expiry));
+                    return aMinDays - bMinDays;
+                }
+                return 0;
+            });
+
+            if (loading) {
+                return <div className="loading"><div className="spinner"></div>Loading inventory...</div>;
+            }
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1>Inventory</h1>
+                        <p>Manage your medicine stock</p>
+                    </div>
+
+                    <div className="card" style={{marginBottom: '20px'}}>
+                        <h3 style={{marginBottom: '20px'}}>Search & Filters</h3>
+
+                        {/* Search Bar */}
+                        <div className="search-box" style={{marginBottom: '20px'}}>
+                            <input
+                                type="text"
+                                placeholder="Search by medicine name, generic name, or batch number..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="form-control"
+                            />
+                        </div>
+
+                        {/* Filter Buttons */}
+                        <div style={{marginBottom: '15px'}}>
+                            <label style={{display: 'block', marginBottom: '10px', fontWeight: 'bold', color: '#16a34a'}}>
+                                Status Filter:
+                            </label>
+                            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                                <button
+                                    className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                                    onClick={() => setFilter('all')}
+                                >
+                                    All Items
+                                </button>
+                                <button
+                                    className={`btn ${filter === 'good' ? 'btn-primary' : 'btn-secondary'}`}
+                                    onClick={() => setFilter('good')}
+                                >
+                                    Good (&gt;60 days)
+                                </button>
+                                <button
+                                    className={`btn ${filter === 'expiring' ? 'btn-primary' : 'btn-secondary'}`}
+                                    onClick={() => setFilter('expiring')}
+                                >
+                                    Expiring Soon (&lt;60 days)
+                                </button>
+                                <button
+                                    className={`btn ${filter === 'expired' ? 'btn-primary' : 'btn-secondary'}`}
+                                    onClick={() => setFilter('expired')}
+                                >
+                                    Expired
+                                </button>
+                                <button
+                                    className={`btn ${filter === 'low_stock' ? 'btn-primary' : 'btn-secondary'}`}
+                                    onClick={() => setFilter('low_stock')}
+                                >
+                                    Low Stock (&lt;=10 units)
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Sort Options */}
+                        <div>
+                            <label style={{display: 'block', marginBottom: '10px', fontWeight: 'bold', color: '#16a34a'}}>
+                                Sort By:
+                            </label>
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                <button
+                                    className={`btn ${sortBy === 'name' ? 'btn-success' : 'btn-secondary'}`}
+                                    onClick={() => setSortBy('name')}
+                                >
+                                    Name (A-Z)
+                                </button>
+                                <button
+                                    className={`btn ${sortBy === 'stock' ? 'btn-success' : 'btn-secondary'}`}
+                                    onClick={() => setSortBy('stock')}
+                                >
+                                    Stock Level
+                                </button>
+                                <button
+                                    className={`btn ${sortBy === 'expiry' ? 'btn-success' : 'btn-secondary'}`}
+                                    onClick={() => setSortBy('expiry')}
+                                >
+                                    Expiry Date
+                                </button>
+                            </div>
+                        </div>
+
+                        <p style={{marginTop: '15px', color: 'var(--text-muted)', fontSize: '0.9rem'}}>
+                            Showing {filteredInventory.length} of {inventory.length} items
+                        </p>
+                    </div>
+
+                    {sortedMedicines.map((medicine, idx) => (
+                        <div className="card" key={idx} style={{marginBottom: '20px'}}>
+                            <h3>{medicine.name}</h3>
+                            {medicine.generic_name && <p style={{color: 'var(--text-muted)', marginBottom: '15px'}}>{medicine.generic_name}</p>}
+                            
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Batch</th>
+                                        <th>Quantity</th>
+                                        <th>Expiry Date</th>
+                                        <th>Days Left</th>
+                                        <th>Unit Price (MAD)</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {medicine.batches.map((batch, bidx) => (
+                                        <tr key={bidx}>
+                                            <td>{batch.batch_number}</td>
+                                            <td>{batch.quantity} / {batch.original_quantity}</td>
+                                            <td>{batch.expiry_date}</td>
+                                            <td>{batch.days_until_expiry} days</td>
+                                            <td>{(batch.unit_price || batch.price || 0).toFixed(2)} MAD</td>
+                                            <td>
+                                                <span className={`badge ${
+                                                    batch.days_until_expiry < 0 ? 'badge-danger' :
+                                                    batch.days_until_expiry < 30 ? 'badge-warning' :
+                                                    'badge-success'
+                                                }`}>
+                                                    {batch.days_until_expiry < 0 ? 'Expired' :
+                                                     batch.days_until_expiry < 30 ? 'Expiring Soon' :
+                                                     'Good'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+
+                    {sortedMedicines.length === 0 && (
+                        <div className="card" style={{textAlign: 'center', padding: '40px'}}>
+                            <p style={{color: 'var(--text-muted)'}}>No inventory items found</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Add Stock Component (with OCR)
+        function AddStock() {
+            const [step, setStep] = useState(1);
+            const [file, setFile] = useState(null);
+            const [preview, setPreview] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [ocrResult, setOcrResult] = useState(null);
+            const [items, setItems] = useState([]);
+            const [message, setMessage] = useState(null);
+            const fileInputRef = useRef(null);
+
+            const handleFileSelect = (selectedFile) => {
+                if (selectedFile && selectedFile.type.startsWith('image/')) {
+                    setFile(selectedFile);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setPreview(reader.result);
+                    };
+                    reader.readAsDataURL(selectedFile);
+                    setStep(2);
+                }
+            };
+
+            const processReceipt = async () => {
+                setLoading(true);
+                setMessage(null);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch(`${API_URL}/receipt/upload`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setOcrResult(data);
+                        setItems(data.items || []);
+                        setStep(3);
+                    } else {
+                        setMessage({ type: 'error', text: 'Failed to process receipt' });
+                    }
+                } catch (err) {
+                    setMessage({ type: 'error', text: 'Failed to connect to server' });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const updateItem = (index, field, value) => {
+                const updated = [...items];
+                updated[index][field] = value;
+                setItems(updated);
+            };
+
+            const removeItem = (index) => {
+                const updated = items.filter((_, idx) => idx !== index);
+                setItems(updated);
+            };
+
+            const addNewItem = () => {
+                const newItem = {
+                    raw_text: '',
+                    medicine_name: '',
+                    quantity: '',
+                    batch_number: '',
+                    expiry_date: '',
+                    unit_price: '',
+                    price: ''
+                };
+                setItems([...items, newItem]);
+            };
+
+            const saveToInventory = async () => {
+                setLoading(true);
+                try {
+                    const response = await fetch(`${API_URL}/inventory/batches`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ items })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setMessage({ type: 'success', text: `Successfully added ${data.added} items to inventory!` });
+                        setTimeout(() => {
+                            setStep(1);
+                            setFile(null);
+                            setPreview(null);
+                            setItems([]);
+                        }, 2000);
+                    }
+                } catch (err) {
+                    setMessage({ type: 'error', text: 'Failed to save inventory' });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1>Add Stock</h1>
+                        <p>Upload receipt or add manually</p>
+                    </div>
+
+                    {message && (
+                        <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'}`}>
+                            {message.text}
+                        </div>
+                    )}
+
+                    {step === 1 && (
+                        <div className="card">
+                            <div 
+                                className="upload-area"
+                                onClick={() => fileInputRef.current.click()}
+                            >
+                                <div style={{fontSize: '3rem', marginBottom: '15px'}}>📄</div>
+                                <p style={{fontSize: '1.2rem', marginBottom: '10px'}}>Upload Receipt</p>
+                                <p style={{color: 'var(--text-muted)'}}>Click to upload or drag and drop</p>
+                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={(e) => handleFileSelect(e.target.files[0])}
+                                accept="image/*"
+                                style={{display: 'none'}}
+                            />
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="card">
+                            <h3>Receipt Preview</h3>
+                            <img src={preview} alt="Receipt" style={{maxWidth: '100%', marginTop: '20px', borderRadius: '8px'}} />
+                            <div className="btn-group">
+                                <button className="btn btn-primary" onClick={processReceipt} disabled={loading}>
+                                    {loading ? 'Processing...' : 'Extract Data with OCR'}
+                                </button>
+                                <button className="btn btn-secondary" onClick={() => setStep(1)}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="card">
+                            <h3>Validate Extracted Data</h3>
+                            <p style={{color: 'var(--text-muted)', marginBottom: '20px'}}>Review and correct the extracted information. You can add or remove items.</p>
+
+                            <div style={{marginBottom: '15px'}}>
+                                <button className="btn btn-primary" onClick={addNewItem}>
+                                    + Add New Item
+                                </button>
+                            </div>
+
+                            <div style={{overflowX: 'auto'}}>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Medicine Name</th>
+                                            <th>Quantity</th>
+                                            <th>Batch</th>
+                                            <th>Expiry (YYYY-MM-DD)</th>
+                                            <th>Unit Price (MAD)</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {items.map((item, idx) => (
+                                            <tr key={idx}>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={item.medicine_name}
+                                                        onChange={(e) => updateItem(idx, 'medicine_name', e.target.value)}
+                                                        placeholder="Medicine name"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        className="form-control"
+                                                        value={item.quantity}
+                                                        onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                                                        style={{width: '80px'}}
+                                                        placeholder="Qty"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={item.batch_number}
+                                                        onChange={(e) => updateItem(idx, 'batch_number', e.target.value)}
+                                                        placeholder="Batch"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={item.expiry_date}
+                                                        onChange={(e) => updateItem(idx, 'expiry_date', e.target.value)}
+                                                        placeholder="2025-12-31"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        className="form-control"
+                                                        value={item.unit_price || item.price}
+                                                        onChange={(e) => {
+                                                            updateItem(idx, 'unit_price', e.target.value);
+                                                            updateItem(idx, 'price', e.target.value);
+                                                        }}
+                                                        style={{width: '100px'}}
+                                                        placeholder="Price"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-danger"
+                                                        onClick={() => removeItem(idx)}
+                                                        style={{padding: '5px 10px', fontSize: '0.85rem'}}
+                                                        title="Remove this item"
+                                                    >
+                                                        × Remove
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {items.length === 0 && (
+                                <div style={{textAlign: 'center', padding: '30px', color: 'var(--text-muted)'}}>
+                                    <p>No items to validate. Click "Add New Item" to add medicines manually.</p>
+                                </div>
+                            )}
+
+                            <div className="btn-group" style={{marginTop: '20px'}}>
+                                <button className="btn btn-success" onClick={saveToInventory} disabled={loading || items.length === 0}>
+                                    {loading ? 'Saving...' : `Save ${items.length} Item${items.length !== 1 ? 's' : ''} to Inventory`}
+                                </button>
+                                <button className="btn btn-secondary" onClick={() => setStep(1)}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Sales Component
+        function Sales() {
+            const [searchQuery, setSearchQuery] = useState('');
+            const [searchResults, setSearchResults] = useState([]);
+            const [selectedMedicine, setSelectedMedicine] = useState(null);
+            const [batches, setBatches] = useState([]);
+            const [quantity, setQuantity] = useState(1);
+            const [unitPrice, setUnitPrice] = useState(0);
+            const [salePrice, setSalePrice] = useState(0);
+            const [message, setMessage] = useState(null);
+            const [salesHistory, setSalesHistory] = useState([]);
+            const [showPrescriptionMode, setShowPrescriptionMode] = useState(false);
+            const [prescriptionFile, setPrescriptionFile] = useState(null);
+            const [prescriptionData, setPrescriptionData] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [prescriptionItems, setPrescriptionItems] = useState([]);
+
+            useEffect(() => {
+                loadSalesHistory();
+            }, []);
+
+            const loadSalesHistory = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/sales/history?limit=20`, { credentials: 'include' });
+                    const data = await response.json();
+                    setSalesHistory(data.sales || []);
+                } catch (err) {
+                    console.error('Error loading sales:', err);
+                }
+            };
+
+            const searchMedicines = async (query) => {
+                if (query.length < 2) {
+                    setSearchResults([]);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/medicine/search?q=${query}`, { credentials: 'include' });
+                    const data = await response.json();
+                    setSearchResults(data.medicines || []);
+                } catch (err) {
+                    console.error('Error searching:', err);
+                }
+            };
+
+            const selectMedicine = async (medicine) => {
+                setSelectedMedicine(medicine);
+                setSearchResults([]);
+                setSearchQuery(medicine.name);
+
+                try {
+                    const response = await fetch(`${API_URL}/medicine/${medicine.id}/batches`, { credentials: 'include' });
+                    const data = await response.json();
+                    const batchList = data.batches || [];
+                    setBatches(batchList);
+
+                    // Set unit price from the oldest (first) batch
+                    if (batchList.length > 0) {
+                        const firstBatchUnitPrice = batchList[0].unit_price || batchList[0].price || 0;
+                        setUnitPrice(firstBatchUnitPrice);
+                        setSalePrice(firstBatchUnitPrice * quantity);
+                    }
+                } catch (err) {
+                    console.error('Error loading batches:', err);
+                }
+            };
+
+            const recordSale = async () => {
+                if (!selectedMedicine || batches.length === 0) {
+                    setMessage({ type: 'error', text: 'Please select a medicine' });
+                    return;
+                }
+
+                const oldestBatch = batches[0];
+
+                try {
+                    const response = await fetch(`${API_URL}/sale/record`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            batch_id: oldestBatch.batch_id,
+                            quantity: parseInt(quantity),
+                            sale_price: parseFloat(salePrice)
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setMessage({ type: 'success', text: 'Sale recorded successfully!' });
+                        setSelectedMedicine(null);
+                        setSearchQuery('');
+                        setBatches([]);
+                        setQuantity(1);
+                        setUnitPrice(0);
+                        setSalePrice(0);
+                        loadSalesHistory();
+                    } else {
+                        setMessage({ type: 'error', text: data.error });
+                    }
+                } catch (err) {
+                    setMessage({ type: 'error', text: 'Failed to record sale' });
+                }
+            };
+
+            const uploadPrescription = async (file) => {
+                if (!file) return;
+
+                setLoading(true);
+                setMessage(null);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch(`${API_URL}/prescription/upload`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setPrescriptionData(data);
+                        setPrescriptionItems(data.medicines.map(item => ({
+                            ...item,
+                            selected: true,
+                            actualQuantity: item.quantity || 30,
+                            medicineFound: null,
+                            batchesAvailable: []
+                        })));
+                        setMessage({ type: 'success', text: 'Prescription scanned successfully!' });
+                    } else {
+                        setMessage({ type: 'error', text: data.error });
+                    }
+                } catch (err) {
+                    setMessage({ type: 'error', text: 'Failed to process prescription' });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const searchMedicineForPrescription = async (item, index) => {
+                try {
+                    const response = await fetch(`${API_URL}/medicine/search?q=${item.medicine_name}`, { credentials: 'include' });
+                    const data = await response.json();
+
+                    const medicines = data.medicines || [];
+                    if (medicines.length > 0) {
+                        const medicine = medicines[0];
+                        const batchResponse = await fetch(`${API_URL}/medicine/${medicine.id}/batches`, { credentials: 'include' });
+                        const batchData = await batchResponse.json();
+
+                        const updatedItems = [...prescriptionItems];
+                        updatedItems[index].medicineFound = medicine;
+                        updatedItems[index].batchesAvailable = batchData.batches || [];
+                        setPrescriptionItems(updatedItems);
+                    }
+                } catch (err) {
+                    console.error('Error searching medicine:', err);
+                }
+            };
+
+            const processPrescriptionSales = async () => {
+                const selectedItems = prescriptionItems.filter(item => item.selected && item.medicineFound);
+
+                if (selectedItems.length === 0) {
+                    setMessage({ type: 'error', text: 'No medicines selected or found in inventory' });
+                    return;
+                }
+
+                setLoading(true);
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const item of selectedItems) {
+                    try {
+                        const oldestBatch = item.batchesAvailable[0];
+                        if (!oldestBatch || oldestBatch.quantity < item.actualQuantity) {
+                            failCount++;
+                            continue;
+                        }
+
+                        const response = await fetch(`${API_URL}/sale/record`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                batch_id: oldestBatch.batch_id,
+                                quantity: parseInt(item.actualQuantity),
+                                sale_price: oldestBatch.unit_price * item.actualQuantity
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+                    } catch (err) {
+                        failCount++;
+                    }
+                }
+
+                setLoading(false);
+                setMessage({
+                    type: successCount > 0 ? 'success' : 'error',
+                    text: `Processed: ${successCount} successful, ${failCount} failed`
+                });
+
+                if (successCount > 0) {
+                    loadSalesHistory();
+                    setPrescriptionData(null);
+                    setPrescriptionItems([]);
+                    setShowPrescriptionMode(false);
+                }
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1>Record Sale</h1>
+                        <p>Process medicine sales (FIFO - oldest batch first)</p>
+                    </div>
+
+                    {message && (
+                        <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'}`}>
+                            {message.text}
+                        </div>
+                    )}
+
+                    <div className="card" style={{marginBottom: '20px'}}>
+                        <div style={{display: 'flex', gap: '10px', marginBottom: '20px'}}>
+                            <button
+                                className={`btn ${!showPrescriptionMode ? 'btn-primary' : 'btn-secondary'}`}
+                                onClick={() => setShowPrescriptionMode(false)}
+                            >
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{width: '18px', height: '18px', fill: 'currentColor', marginRight: '8px', verticalAlign: 'middle'}}>
+                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                </svg>
+                                Manual Search
+                            </button>
+                            <button
+                                className={`btn ${showPrescriptionMode ? 'btn-primary' : 'btn-secondary'}`}
+                                onClick={() => setShowPrescriptionMode(true)}
+                            >
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{width: '18px', height: '18px', fill: 'currentColor', marginRight: '8px', verticalAlign: 'middle'}}>
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                                </svg>
+                                Scan Prescription
+                            </button>
+                        </div>
+                    </div>
+
+                    {!showPrescriptionMode ? (
+                        <div className="card">
+                            <h3>Search Medicine</h3>
+                        <div className="search-box">
+                            <input
+                                type="text"
+                                placeholder="Search by medicine name..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    searchMedicines(e.target.value);
+                                }}
+                            />
+                            {searchResults.length > 0 && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    right: 0,
+                                    background: 'var(--card-bg)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 'var(--radius-md)',
+                                    marginTop: '6px',
+                                    maxHeight: '300px',
+                                    overflowY: 'auto',
+                                    zIndex: 100,
+                                    boxShadow: 'var(--shadow-lg)'
+                                }}>
+                                    {searchResults.map((medicine, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => selectMedicine(medicine)}
+                                            style={{
+                                                padding: '12px',
+                                                cursor: 'pointer',
+                                                borderBottom: '1px solid #f0f0f0'
+                                            }}
+                                            onMouseOver={(e) => e.target.style.background = 'var(--bg-subtle)'}
+                                            onMouseOut={(e) => e.target.style.background = 'var(--card-bg)'}
+                                        >
+                                            <div style={{fontWeight: 'bold'}}>{medicine.name}</div>
+                                            <div style={{fontSize: '0.85rem', color: 'var(--text-muted)'}}>
+                                                Stock: {medicine.total_quantity} units
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {selectedMedicine && batches.length > 0 && (
+                            <div style={{marginTop: '30px'}}>
+                                <h4>Available Batches (FIFO Order)</h4>
+                                <table style={{marginBottom: '20px'}}>
+                                    <thead>
+                                        <tr>
+                                            <th>Batch</th>
+                                            <th>Available</th>
+                                            <th>Expiry</th>
+                                            <th>Days Left</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {batches.map((batch, idx) => (
+                                            <tr key={idx} style={idx === 0 ? {background: '#dcfce7'} : {}}>
+                                                <td>
+                                                    {batch.batch_number}
+                                                    {idx === 0 && <span style={{marginLeft: '10px', color: '#16a34a'}}>← Will be used</span>}
+                                                </td>
+                                                <td>{batch.quantity} units</td>
+                                                <td>{batch.expiry_date}</td>
+                                                <td>
+                                                    <span className={`badge ${
+                                                        batch.days_until_expiry < 30 ? 'badge-warning' : 'badge-success'
+                                                    }`}>
+                                                        {batch.days_until_expiry} days
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className="two-column">
+                                    <div className="form-group">
+                                        <label>Quantity to Sell</label>
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            value={quantity}
+                                            onChange={(e) => {
+                                                const qty = parseInt(e.target.value) || 1;
+                                                setQuantity(qty);
+                                                setSalePrice((unitPrice * qty).toFixed(2));
+                                            }}
+                                            min="1"
+                                            max={batches[0]?.quantity || 1}
+                                        />
+                                        <small style={{color: 'var(--text-muted)'}}>Max: {batches[0]?.quantity || 0} units available</small>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Unit Price (MAD)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            className="form-control"
+                                            value={unitPrice}
+                                            onChange={(e) => {
+                                                const price = parseFloat(e.target.value) || 0;
+                                                setUnitPrice(price);
+                                                setSalePrice((price * quantity).toFixed(2));
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Total Price (MAD)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="form-control"
+                                        value={salePrice}
+                                        readOnly
+                                        style={{background: 'var(--bg-subtle)', fontWeight: 'bold', fontSize: '1.2rem'}}
+                                    />
+                                    <small style={{color: 'var(--text-muted)'}}>Auto-calculated: {quantity} × {unitPrice} MAD</small>
+                                </div>
+
+                                <button className="btn btn-success" onClick={recordSale}>
+                                    Record Sale
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    ) : (
+                        <div className="card">
+                            <h3>Scan Prescription</h3>
+                            <p style={{color: 'var(--text-muted)', marginBottom: '20px'}}>
+                                Upload a prescription image to automatically extract medicine information
+                            </p>
+
+                            {!prescriptionData ? (
+                                <div style={{textAlign: 'center', padding: '40px'}}>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setPrescriptionFile(file);
+                                                uploadPrescription(file);
+                                            }
+                                        }}
+                                        style={{display: 'none'}}
+                                        id="prescription-upload"
+                                    />
+                                    <label htmlFor="prescription-upload" className="btn btn-primary" style={{cursor: 'pointer', fontSize: '1.1rem'}}>
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style={{width: '20px', height: '20px', fill: 'currentColor', marginRight: '10px', verticalAlign: 'middle'}}>
+                                            <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                                        </svg>
+                                        Upload Prescription Image
+                                    </label>
+                                    {loading && (
+                                        <div style={{marginTop: '20px'}}>
+                                            <div className="spinner" style={{margin: '0 auto'}}></div>
+                                            <p>Processing prescription...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div>
+                                    <div style={{marginBottom: '20px', padding: '16px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)'}}>
+                                        <h4>Prescription Information</h4>
+                                        {prescriptionData.prescription_info.patient_name && (
+                                            <p><strong>Patient:</strong> {prescriptionData.prescription_info.patient_name}</p>
+                                        )}
+                                        {prescriptionData.prescription_info.doctor_name && (
+                                            <p><strong>Doctor:</strong> {prescriptionData.prescription_info.doctor_name}</p>
+                                        )}
+                                        {prescriptionData.prescription_info.date && (
+                                            <p><strong>Date:</strong> {prescriptionData.prescription_info.date}</p>
+                                        )}
+                                    </div>
+
+                                    <h4>Prescribed Medicines</h4>
+                                    <table style={{marginTop: '15px'}}>
+                                        <thead>
+                                            <tr>
+                                                <th>Select</th>
+                                                <th>Medicine</th>
+                                                <th>Dosage</th>
+                                                <th>Quantity</th>
+                                                <th>Instructions</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {prescriptionItems.map((item, idx) => (
+                                                <tr key={idx}>
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.selected}
+                                                            onChange={(e) => {
+                                                                const updated = [...prescriptionItems];
+                                                                updated[idx].selected = e.target.checked;
+                                                                setPrescriptionItems(updated);
+                                                            }}
+                                                        />
+                                                    </td>
+                                                    <td>{item.medicine_name}</td>
+                                                    <td>{item.dosage}</td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            value={item.actualQuantity}
+                                                            onChange={(e) => {
+                                                                const updated = [...prescriptionItems];
+                                                                updated[idx].actualQuantity = e.target.value;
+                                                                setPrescriptionItems(updated);
+                                                            }}
+                                                            style={{width: '60px', padding: '5px'}}
+                                                            min="1"
+                                                        />
+                                                    </td>
+                                                    <td style={{fontSize: '0.85rem'}}>{item.instructions}</td>
+                                                    <td>
+                                                        {item.medicineFound ? (
+                                                            <span className="badge badge-success">
+                                                                Found ({item.batchesAvailable[0]?.quantity || 0} available)
+                                                            </span>
+                                                        ) : (
+                                                            <span className="badge badge-warning">Not searched</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-secondary"
+                                                            style={{padding: '5px 10px', fontSize: '0.85rem'}}
+                                                            onClick={() => searchMedicineForPrescription(item, idx)}
+                                                        >
+                                                            Find
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    <div style={{marginTop: '20px', display: 'flex', gap: '10px'}}>
+                                        <button
+                                            className="btn btn-success"
+                                            onClick={processPrescriptionSales}
+                                            disabled={loading || prescriptionItems.filter(i => i.selected && i.medicineFound).length === 0}
+                                        >
+                                            Process Selected Sales
+                                        </button>
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => {
+                                                setPrescriptionData(null);
+                                                setPrescriptionItems([]);
+                                                setPrescriptionFile(null);
+                                            }}
+                                        >
+                                            Clear & Upload New
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <h3>Recent Sales</h3>
+                        {salesHistory.length > 0 ? (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Medicine</th>
+                                        <th>Batch</th>
+                                        <th>Quantity</th>
+                                        <th>Total Price (MAD)</th>
+                                        <th>Pharmacist</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {salesHistory.map((sale, idx) => (
+                                        <tr key={idx}>
+                                            <td>{new Date(sale.sale_date).toLocaleString()}</td>
+                                            <td>{sale.medicine_name}</td>
+                                            <td>{sale.batch_number}</td>
+                                            <td>{sale.quantity}</td>
+                                            <td>{parseFloat(sale.sale_price || 0).toFixed(2)} MAD</td>
+                                            <td>{sale.pharmacist_name}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '20px'}}>No sales recorded yet</p>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Main App Component
+        function App() {
+            const [user, setUser] = useState(null);
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                checkAuth();
+            }, []);
+
+            const checkAuth = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setUser(data.user);
+                    }
+                } catch (err) {
+                    console.error('Auth check failed:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleLogout = async () => {
+                await fetch(`${API_URL}/auth/logout`, { 
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                setUser(null);
+            };
+
+            if (loading) {
+                return <div className="loading"><div className="spinner"></div>Loading...</div>;
+            }
+
+            if (!user) {
+                return <LoginScreen onLogin={setUser} />;
+            }
+
+            return (
+                <div className="app-container">
+                    <div className="sidebar">
+                        <div className="logo">
+                            <img src="logo.png" alt="Logo" />
+                            <div className="logo-text">
+                                <span className="logo-title">PharmaSys</span>
+                                <span className="logo-subtitle">Inventory</span>
+                            </div>
+                        </div>
+
+                        <nav className="sidebar-nav">
+                            <span className="nav-section-label">Main Menu</span>
+                            <div className={`menu-item ${currentPage === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentPage('dashboard')}>
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                                </svg>
+                                <span>Dashboard</span>
+                            </div>
+                            <div className={`menu-item ${currentPage === 'inventory' ? 'active' : ''}`} onClick={() => setCurrentPage('inventory')}>
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/>
+                                </svg>
+                                <span>Inventory</span>
+                            </div>
+                            <div className={`menu-item ${currentPage === 'add-stock' ? 'active' : ''}`} onClick={() => setCurrentPage('add-stock')}>
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                                <span>Add Stock</span>
+                            </div>
+                            <div className={`menu-item ${currentPage === 'sales' ? 'active' : ''}`} onClick={() => setCurrentPage('sales')}>
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                                </svg>
+                                <span>Sales</span>
+                            </div>
+                        </nav>
+
+                        <div className="user-info">
+                            <span className="user-name">{user.username}</span>
+                            <span className="user-role">Pharmacist</span>
+                            <button onClick={handleLogout}>Sign out</button>
+                        </div>
+                    </div>
+
+                    <div className="main-content">
+                        {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
+                        {currentPage === 'inventory' && <Inventory />}
+                        {currentPage === 'add-stock' && <AddStock />}
+                        {currentPage === 'sales' && <Sales />}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

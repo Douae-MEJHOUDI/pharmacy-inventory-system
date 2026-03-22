@@ -1,0 +1,22 @@
+# Environment & secrets
+.env
+
+# Claude Code
+.claude/
+
+# Uploaded files
+uploads/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db

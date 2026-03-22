@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4a7c2c">
+    <title>PharmaSys Mobile</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-color: #4a7c2c;
+            --secondary-color: #2d5016;
+            --accent-color: #5a9c3c;
+            --bg-color: #f5f5f0;
+            --card-bg: white;
+            --text-color: #333;
+            --text-light: #8b7355;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* Mobile App Container */
+        .mobile-app {
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+
+        /* Header */
+        .mobile-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* Content Area */
+        .mobile-content {
+            padding: 15px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 12px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .stat-card.primary .stat-value { color: var(--primary-color); }
+        .stat-card.success .stat-value { color: var(--accent-color); }
+        .stat-card.warning .stat-value { color: #c8965f; }
+        .stat-card.danger .stat-value { color: #8b4513; }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: var(--secondary-color);
+        }
+
+        .btn-success {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #a0826d;
+            color: white;
+        }
+
+        /* Expiring Items */
+        .expiring-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .expiring-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .expiring-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .item-details {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-danger {
+            background: #f5d9c8;
+            color: #8b4513;
+        }
+
+        .badge-warning {
+            background: #f5e6d3;
+            color: #8b4513;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: var(--secondary-color);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-icon {
+            margin-bottom: 4px;
+        }
+
+        .nav-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-expired { background: #d32f2f; }
+        .status-warning { background: #f57c00; }
+        .status-good { background: #388e3c; }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-danger {
+            background: #f5d9c8;
+            color: #8b4513;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: var(--secondary-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .action-label {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const API_URL = window.location.origin.replace(':3000', ':5000') + '/api';
+
+        // Login Component
+        function LoginScreen({ onLogin }) {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+
+                try {
+                    const response = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        onLogin(data.user);
+                    } else {
+                        setError('Invalid username or password');
+                    }
+                } catch (err) {
+                    setError('Failed to connect to server');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="login-container">
+                    <div className="login-box">
+                        <div className="login-logo">
+                            <img src="logo.png" alt="Logo" />
+                            <h1 className="login-title">PharmaSys Mobile</h1>
+                        </div>
+                        {error && <div className="alert alert-danger">{error}</div>}
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label className="form-label">Username</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary" disabled={loading}>
+                                {loading ? 'Logging in...' : 'Login'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Dashboard Component
+        function MobileDashboard({ user }) {
+            const [stats, setStats] = useState(null);
+            const [expiringItems, setExpiringItems] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                loadData();
+                const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+                return () => clearInterval(interval);
+            }, []);
+
+            const loadData = async () => {
+                try {
+                    const [statsRes, expiringRes] = await Promise.all([
+                        fetch(`${API_URL}/dashboard/stats`, { credentials: 'include' }),
+                        fetch(`${API_URL}/inventory/expiring/30`, { credentials: 'include' })
+                    ]);
+
+                    const statsData = await statsRes.json();
+                    const expiringData = await expiringRes.json();
+
+                    setStats(statsData.stats);
+                    setExpiringItems(expiringData.items || []);
+                } catch (err) {
+                    console.error('Error loading dashboard:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="spinner"></div>
+                        Loading dashboard...
+                    </div>
+                );
+            }
+
+            return (
+                <div className="mobile-content">
+                    <div className="stats-grid">
+                        <div className="stat-card primary">
+                            <div className="stat-label">Total Medicines</div>
+                            <div className="stat-value">{stats?.total_medicines || 0}</div>
+                        </div>
+                        <div className="stat-card success">
+                            <div className="stat-label">Stock Value</div>
+                            <div className="stat-value">{stats?.total_value || 0}</div>
+                            <div className="stat-label">MAD</div>
+                        </div>
+                        <div className="stat-card warning">
+                            <div className="stat-label">Expiring Soon</div>
+                            <div className="stat-value">{stats?.expiring_30_days || 0}</div>
+                        </div>
+                        <div className="stat-card danger">
+                            <div className="stat-label">Expired</div>
+                            <div className="stat-value">{stats?.expired || 0}</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-title">Today's Activity</div>
+                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                            <span>Sales Today:</span>
+                            <strong>{stats?.sales_today || 0} transactions</strong>
+                        </div>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                            <span>Units Sold:</span>
+                            <strong>{stats?.units_sold_today || 0} units</strong>
+                        </div>
+                    </div>
+
+                    {expiringItems.length > 0 && (
+                        <div className="card">
+                            <div className="card-title">Expiring Items & Alerts</div>
+                            <div className="expiring-list">
+                                {expiringItems.slice(0, 8).map((item, idx) => (
+                                    <div key={idx} className="expiring-item">
+                                        <div className="item-info">
+                                            <div className="item-name">
+                                                <span className={`status-indicator ${
+                                                    item.days_until_expiry <= 0 ? 'status-expired' :
+                                                    item.days_until_expiry <= 15 ? 'status-warning' :
+                                                    'status-good'
+                                                }`}></span>
+                                                {item.name} {item.dosage}
+                                            </div>
+                                            <div className="item-details">
+                                                Batch: {item.batch_number} • Qty: {item.quantity} • {item.expiry_date}
+                                            </div>
+                                        </div>
+                                        <span className={`badge ${
+                                            item.days_until_expiry <= 0 ? 'badge-danger' :
+                                            item.days_until_expiry <= 7 ? 'badge-danger' :
+                                            item.days_until_expiry <= 15 ? 'badge-warning' :
+                                            'badge-success'
+                                        }`}>
+                                            {item.days_until_expiry <= 0 ? 'EXPIRED' : `${item.days_until_expiry}d`}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <div className="card-title">Quick Actions</div>
+                        <button className="btn btn-primary" onClick={() => window.location.href = 'index.html'}>
+                            Open Full App
+                        </button>
+                        <button className="btn btn-success" onClick={() => alert('Feature coming soon!')}>
+                            View Detailed Reports
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Mobile Inventory Component
+        function MobileInventory() {
+            const [inventory, setInventory] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [searchQuery, setSearchQuery] = useState('');
+
+            useEffect(() => {
+                loadInventory();
+            }, []);
+
+            const loadInventory = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/inventory/all`, { credentials: 'include' });
+                    const data = await response.json();
+                    setInventory(data.inventory || []);
+                } catch (err) {
+                    console.error('Error loading inventory:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const filteredInventory = inventory.filter(item =>
+                searchQuery === '' ||
+                item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (item.batch_number && item.batch_number.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+
+            // Group by medicine
+            const grouped = {};
+            filteredInventory.forEach(item => {
+                if (!grouped[item.medicine_id]) {
+                    grouped[item.medicine_id] = {
+                        name: item.name,
+                        batches: []
+                    };
+                }
+                grouped[item.medicine_id].batches.push(item);
+            });
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="spinner"></div>
+                        Loading inventory...
+                    </div>
+                );
+            }
+
+            return (
+                <div className="mobile-content">
+                    <div className="card">
+                        <input
+                            type="text"
+                            placeholder="Search medicines or batch number..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="form-control"
+                            style={{marginBottom: '15px'}}
+                        />
+                    </div>
+
+                    {Object.values(grouped).map((medicine, idx) => (
+                        <div className="card" key={idx}>
+                            <div className="card-title">{medicine.name}</div>
+                            {medicine.batches.map((batch, bidx) => (
+                                <div key={bidx} style={{
+                                    padding: '10px',
+                                    borderBottom: bidx < medicine.batches.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                }}>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '5px'}}>
+                                        <span style={{fontWeight: 500}}>Batch: {batch.batch_number}</span>
+                                        <span className={`badge ${
+                                            batch.days_until_expiry <= 0 ? 'badge-danger' :
+                                            batch.days_until_expiry <= 30 ? 'badge-warning' :
+                                            'badge-success'
+                                        }`}>
+                                            {batch.days_until_expiry <= 0 ? 'Expired' : `${batch.days_until_expiry}d`}
+                                        </span>
+                                    </div>
+                                    <div style={{fontSize: '0.85rem', color: 'var(--text-light)'}}>
+                                        Qty: {batch.quantity} • Exp: {batch.expiry_date} • {(batch.unit_price || 0).toFixed(2)} MAD
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+
+                    {Object.keys(grouped).length === 0 && (
+                        <div className="card" style={{textAlign: 'center', padding: '40px'}}>
+                            <p style={{color: 'var(--text-light)'}}>No items found</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Quick Info Component (Simple view for other features)
+        function QuickInfo({ title, message }) {
+            return (
+                <div className="mobile-content">
+                    <div className="card" style={{textAlign: 'center', padding: '40px'}}>
+                        <h2 style={{marginBottom: '20px', color: 'var(--secondary-color)'}}>{title}</h2>
+                        <p style={{color: 'var(--text-light)', marginBottom: '30px'}}>{message}</p>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => window.location.href = '/'}
+                        >
+                            Open Full App
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Main App
+        function MobileApp() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [currentPage, setCurrentPage] = useState('dashboard');
+
+            useEffect(() => {
+                checkAuth();
+                // Register service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(() => console.log('Service Worker registered'))
+                        .catch(err => console.log('Service Worker registration failed:', err));
+                }
+            }, []);
+
+            const checkAuth = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setUser(data.user);
+                    }
+                } catch (err) {
+                    console.error('Auth check failed:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleLogout = async () => {
+                await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                setUser(null);
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="spinner"></div>
+                        Loading...
+                    </div>
+                );
+            }
+
+            if (!user) {
+                return <LoginScreen onLogin={setUser} />;
+            }
+
+            return (
+                <div className="mobile-app">
+                    <div className="mobile-header">
+                        <div className="header-content">
+                            <div className="header-title">PharmaSys Mobile</div>
+                            <div className="user-badge" onClick={handleLogout}>
+                                {user.username} • Logout
+                            </div>
+                        </div>
+                    </div>
+
+                    {currentPage === 'dashboard' && <MobileDashboard user={user} />}
+                    {currentPage === 'inventory' && <MobileInventory />}
+                    {currentPage === 'sales' && (
+                        <QuickInfo
+                            title="Sales"
+                            message="For recording sales and viewing detailed sales history, please use the full web app."
+                        />
+                    )}
+                    {currentPage === 'add-stock' && (
+                        <QuickInfo
+                            title="Add Stock"
+                            message="For uploading receipts and adding stock with OCR, please use the full web app."
+                        />
+                    )}
+
+                    <div className="bottom-nav">
+                        <div
+                            className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
+                            onClick={() => setCurrentPage('dashboard')}
+                        >
+                            <div className="nav-icon">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                                </svg>
+                            </div>
+                            <div className="nav-label">Dashboard</div>
+                        </div>
+                        <div
+                            className={`nav-item ${currentPage === 'inventory' ? 'active' : ''}`}
+                            onClick={() => setCurrentPage('inventory')}
+                        >
+                            <div className="nav-icon">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/>
+                                </svg>
+                            </div>
+                            <div className="nav-label">Inventory</div>
+                        </div>
+                        <div
+                            className={`nav-item ${currentPage === 'sales' ? 'active' : ''}`}
+                            onClick={() => setCurrentPage('sales')}
+                        >
+                            <div className="nav-icon">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                                </svg>
+                            </div>
+                            <div className="nav-label">Sales</div>
+                        </div>
+                        <div
+                            className={`nav-item ${currentPage === 'add-stock' ? 'active' : ''}`}
+                            onClick={() => setCurrentPage('add-stock')}
+                        >
+                            <div className="nav-icon">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                            </div>
+                            <div className="nav-label">Add Stock</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<MobileApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>

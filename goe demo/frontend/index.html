@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PharmaSys POS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:     #1a7a4a;
+      --green-dk:  #135c38;
+      --green-lt:  #e8f5ee;
+      --green-div: rgba(255,255,255,0.07);
+      --green-mid: rgba(255,255,255,0.08);
+
+      --blue:      #1e5bab;
+      --blue-lt:   #eef2fb;
+
+      --bg:        #f2f5f8;
+      --card:      #ffffff;
+      --border:    #e2e8f0;
+      --border-lt: #f0f4f8;
+
+      --text:      #1a202c;
+      --text-2:    #4a5568;
+      --text-3:    #94a3b8;
+
+      --ok-bg:     #dcfce7;
+      --ok-text:   #14532d;
+      --ok-badge:  #16a34a;
+      --bad-bg:    #fee2e2;
+      --bad-text:  #7f1d1d;
+      --bad-badge: #dc2626;
+
+      --font:  'Inter', system-ui, sans-serif;
+      --sw:    248px;
+      --th:    56px;
+      --r:     8px;
+      --r-sm:  5px;
+      --r-lg:  12px;
+      --sh:    0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --sh-md: 0 4px 16px rgba(0,0,0,.09);
+    }
+
+    html, body {
+      height: 100%; font-family: var(--font); background: var(--bg);
+      color: var(--text); font-size: 14px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Shell ─────────────────────────────────────────────── */
+    .shell   { display: flex; height: 100vh; overflow: hidden; }
+    .sidebar { width: var(--sw); min-width: var(--sw); background: var(--green-dk); display: flex; flex-direction: column; overflow: hidden; }
+    .main    { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+    /* ─── Sidebar ────────────────────────────────────────────── */
+    .sb-top {
+      padding: 16px 14px;
+      border-bottom: 1px solid var(--green-div);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sb-logo { width: 38px; height: 38px; border-radius: 9px; overflow: hidden; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sb-logo img { width: 34px; height: 34px; object-fit: contain; }
+    .sb-name { font-size: 14.5px; font-weight: 700; color: #f0fdf4; letter-spacing: -.02em; }
+    .sb-sub  { font-size: 10px; color: rgba(255,255,255,.32); text-transform: uppercase; letter-spacing: .07em; margin-top: 1px; }
+
+    .sb-nav   { flex: 1; padding: 10px 8px; overflow-y: auto; }
+    .sb-group { margin-bottom: 2px; }
+    .sb-lbl   { font-size: 9.5px; font-weight: 600; color: rgba(255,255,255,.28); text-transform: uppercase; letter-spacing: .09em; padding: 10px 12px 5px; }
+
+    .sb-item {
+      display: flex; align-items: center; gap: 9px;
+      width: 100%; padding: 7.5px 12px; border-radius: 6px;
+      border: none; border-left: 2px solid transparent;
+      background: none; color: rgba(255,255,255,.52);
+      font-family: var(--font); font-size: 13px; font-weight: 500;
+      text-align: left; cursor: pointer;
+      transition: background .12s, color .12s, border-color .12s; user-select: none;
+    }
+    .sb-item:hover           { background: var(--green-mid); color: rgba(255,255,255,.82); }
+    .sb-item.active          { background: rgba(30,91,171,.22); color: #fff; border-left-color: #60a5fa; }
+    .sb-item.active .si      { color: #93c5fd; }
+    .sb-item.dim             { opacity: .42; cursor: default; pointer-events: none; }
+    .si { width: 14px; height: 14px; flex-shrink: 0; color: rgba(255,255,255,.32); }
+    .sb-item.active .si, .sb-item:hover .si { color: rgba(255,255,255,.7); }
+
+    .sb-item-right { margin-left: auto; font-size: 10px; color: rgba(255,255,255,.28); background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 10px; }
+
+    .sb-foot { padding: 12px 14px; border-top: 1px solid var(--green-div); }
+    .sb-foot-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .sb-foot-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 2px rgba(74,222,128,.2); flex-shrink: 0; }
+    .sb-foot-txt { font-size: 11px; color: rgba(255,255,255,.36); }
+    .sb-user { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: default; }
+    .sb-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.7); flex-shrink: 0; }
+    .sb-uname  { font-size: 12px; color: rgba(255,255,255,.55); font-weight: 500; }
+    .sb-urole  { font-size: 10.5px; color: rgba(255,255,255,.3); }
+
+    /* ─── Topbar ──────────────────────────────────────────────── */
+    .topbar {
+      height: var(--th); background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px; gap: 10px; flex-shrink: 0;
+    }
+    .tb-title  { font-size: 14.5px; font-weight: 600; color: var(--text); }
+    .tb-sep    { color: var(--text-3); font-size: 13px; }
+    .tb-sub    { font-size: 13px; color: var(--text-3); }
+    .tb-space  { flex: 1; }
+    .tb-time   { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+    .ai-pill   {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 20px;
+      background: var(--green-lt); border: 1px solid #a7f3d0;
+      font-size: 11px; font-weight: 600; color: var(--green);
+    }
+    .ai-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+    /* ─── Content ─────────────────────────────────────────────── */
+    .content { flex: 1; overflow-y: auto; padding: 24px; }
+    .page        { display: none; }
+    .page.active { display: block; }
+    .pg-hd   { margin-bottom: 20px; }
+    .pg-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .pg-desc  { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+
+    /* ─── Cards ───────────────────────────────────────────────── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh); }
+    .ch   { padding: 13px 18px; border-bottom: 1px solid var(--border-lt); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .ct   { font-size: 13px; font-weight: 600; color: var(--text); }
+    .cs   { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+    .cb   { padding: 18px; }
+
+    /* ─── Badges & Buttons ─────────────────────────────────────── */
+    .badge   { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-weight: 600; }
+    .b-green { background: var(--ok-bg); color: var(--ok-badge); }
+    .b-blue  { background: var(--blue-lt); color: var(--blue); }
+    .b-gray  { background: #f1f5f9; color: var(--text-2); }
+    .b-red   { background: var(--bad-bg); color: var(--bad-badge); }
+    .b-amber { background: #fffbeb; color: #92400e; }
+    .b-new   { background: var(--ok-bg); color: var(--ok-badge); transition: opacity .8s; }
+    .b-new.out { opacity: 0; }
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--r-sm); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .15s; }
+    .btn-green  { background: var(--green); color: #fff; }
+    .btn-green:hover { background: var(--green-dk); }
+    .btn-blue   { background: var(--blue); color: #fff; }
+    .btn-blue:hover { background: #174f96; }
+    .btn-ghost  { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-lg { padding: 10px 22px; font-size: 13.5px; font-weight: 600; }
+
+    /* ─── Dashboard ─────────────────────────────────────────────── */
+    .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
+    .kpi { padding: 16px 18px; }
+    .kpi-lbl  { font-size: 10.5px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
+    .kpi-val  { font-size: 24px; font-weight: 700; color: var(--text); margin-top: 6px; letter-spacing: -.03em; }
+    .kpi-sub  { font-size: 11.5px; color: var(--text-3); margin-top: 3px; }
+    .kpi-up   { color: var(--ok-badge); }
+    .kpi-dn   { color: var(--bad-badge); }
+
+    .dash-grid { display: grid; grid-template-columns: 1fr 320px; gap: 14px; }
+
+    .tx-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border-lt); }
+    .tx-row:last-child { border-bottom: none; }
+    .tx-id   { font-size: 11px; font-family: monospace; color: var(--text-3); width: 44px; flex-shrink: 0; }
+    .tx-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+    .tx-qty  { font-size: 12px; color: var(--text-3); width: 28px; text-align: center; flex-shrink: 0; }
+    .tx-amt  { font-size: 13px; font-weight: 600; color: var(--text); width: 72px; text-align: right; flex-shrink: 0; }
+    .tx-time { font-size: 11px; color: var(--text-3); width: 38px; text-align: right; flex-shrink: 0; }
+
+    .alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border-lt); }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .ai-red   { background: var(--bad-bg); color: var(--bad-badge); }
+    .ai-amber { background: #fffbeb; color: #d97706; }
+    .alert-name  { font-size: 13px; font-weight: 500; color: var(--text); }
+    .alert-detail { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+
+    /* ─── Preview state ───────────────────────────────────────── */
+    .preview-wrap {
+      display: flex; gap: 24px; align-items: flex-start;
+    }
+    .preview-img-box {
+      flex: 1; border-radius: var(--r-lg); overflow: hidden;
+      border: 1px solid var(--border); background: #f8fafb;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 280px; max-height: 420px;
+    }
+    .preview-img-box img {
+      width: 100%; height: 100%; object-fit: contain; max-height: 420px;
+      display: block;
+    }
+    .preview-meta { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+    .preview-field { }
+    .preview-lbl { font-size: 10.5px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+    .preview-val { font-size: 13px; color: var(--text); font-weight: 500; word-break: break-all; }
+    .preview-val.mono { font-family: monospace; font-size: 12px; }
+
+    /* ─── Upload ───────────────────────────────────────────────── */
+    .drop {
+      position: relative; border: 1.5px dashed var(--border);
+      border-radius: var(--r-lg); background: var(--bg);
+      padding: 52px 32px; text-align: center; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop:hover, .drop.over { border-color: var(--green); background: var(--green-lt); }
+    .drop-icon  { width: 36px; height: 36px; margin: 0 auto 14px; color: var(--text-3); }
+    .drop-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+    .drop-hint  { font-size: 13px; color: var(--text-3); }
+    .drop-fmts  { font-size: 11px; color: var(--text-3); margin-top: 10px; }
+
+    /* ─── Processing steps ─────────────────────────────────────── */
+    .proc { display: none; padding: 32px 24px; text-align: center; }
+    .proc.on { display: block; }
+    .proc-title { font-size: 14.5px; font-weight: 600; color: var(--text); margin-bottom: 26px; }
+    .steps { display: flex; flex-direction: column; gap: 0; max-width: 360px; margin: 0 auto; }
+    .step { display: flex; align-items: center; gap: 14px; padding: 10px 0; opacity: .3; transition: opacity .3s; }
+    .step.active, .step.done { opacity: 1; }
+    .step-icon {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+      background: #fff; font-size: 11.5px; font-weight: 600; color: var(--text-3);
+    }
+    .step.active .step-icon { border-color: var(--blue); background: var(--blue-lt); }
+    .step.done .step-icon   { border-color: var(--ok-badge); background: var(--ok-bg); color: var(--ok-badge); }
+    .step-label { font-size: 13px; font-weight: 500; color: var(--text-2); text-align: left; }
+    .step.active .step-label { color: var(--text); }
+    .step-conn  { width: 2px; height: 16px; background: var(--border); margin-left: 12px; }
+    .spin-sm { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #c3d5f0; border-top-color: var(--blue); animation: spin .55s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Confidence summary bar ───────────────────────────────── */
+    .conf-bar { display: flex; border-radius: var(--r); overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; }
+    .conf-seg { flex: 1; padding: 12px 16px; border-right: 1px solid var(--border); }
+    .conf-seg:last-child { border-right: none; }
+    .conf-val { font-size: 20px; font-weight: 700; letter-spacing: -.03em; }
+    .conf-lbl { font-size: 10.5px; color: var(--text-3); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+    .cv-ok    { color: var(--ok-badge); }
+    .cv-bad   { color: var(--bad-badge); }
+
+    /* ─── Results table ────────────────────────────────────────── */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; padding: 9px 14px;
+      font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--text-3);
+      background: #f8fafb; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border-lt); }
+    tbody tr:last-child { border-bottom: none; }
+
+    /* Confidence cells */
+    .cc       { padding: 0; vertical-align: middle; }
+    .cc-inner { padding: 8px 14px; }
+    .cell-input {
+      background: transparent; border: none; outline: none;
+      font-family: var(--font); font-size: 13px; font-weight: 500;
+      color: inherit; width: 100%; padding: 0; cursor: text;
+    }
+    .cell-input:focus {
+      background: rgba(255,255,255,0.65); border-radius: 3px;
+      padding: 0 4px; margin: 0 -4px; outline: 1.5px solid rgba(30,91,171,.4);
+    }
+    .cpct { display: block; font-size: 10px; font-weight: 700; margin-top: 3px; letter-spacing: .02em; }
+
+    .c-ok           { background: var(--ok-bg); }
+    .c-ok .cell-input { color: var(--ok-text); }
+    .c-ok .cpct     { color: var(--ok-badge); }
+    .c-bad          { background: var(--bad-bg); }
+    .c-bad .cell-input { color: var(--bad-text); }
+    .c-bad .cpct    { color: var(--bad-badge); }
+
+    /* Manually edited cell */
+    .cc.edited              { background: #f8fafc; }
+    .cc.edited .cell-input  { color: var(--text); }
+    .cc.edited .cpct        { color: var(--text-3); }
+    .cc.edited .cpct::before { content: 'Edited  '; }
+
+    /* ─── Save bar ─────────────────────────────────────────────── */
+    .save-bar { display: none; align-items: center; justify-content: space-between; padding: 14px 18px; background: #f8fafb; border-top: 1px solid var(--border-lt); }
+    .save-bar.on { display: flex; }
+    .save-note { font-size: 12.5px; color: var(--text-2); }
+    .save-note strong { color: var(--text); }
+
+    /* ─── Success ──────────────────────────────────────────────── */
+    .success-block { display: none; text-align: center; padding: 40px 24px; }
+    .success-block.on { display: block; }
+    .success-icon { width: 50px; height: 50px; border-radius: 50%; background: var(--ok-bg); color: var(--ok-badge); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+    .success-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .success-sub   { font-size: 13px; color: var(--text-2); }
+
+    /* ─── Alert bar ────────────────────────────────────────────── */
+    .err-bar    { display: none; padding: 11px 16px; border-radius: var(--r); font-size: 13px; margin-top: 12px; }
+    .err-bar.on { display: block; background: var(--bad-bg); color: var(--bad-text); border: 1px solid #fecaca; }
+
+    /* ─── Inventory ────────────────────────────────────────────── */
+    .inv-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .inv-row-new { animation: rowflash .6s ease; }
+    @keyframes rowflash { 0% { background: var(--ok-bg); } 100% { background: transparent; } }
+
+    td { padding: 10px 14px; font-size: 13px; color: var(--text); vertical-align: middle; }
+    td.mono { font-family: 'SF Mono','Cascadia Code',monospace; font-size: 12px; }
+    td.muted { color: var(--text-3); }
+
+    /* ─── Misc ─────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo"><img src="logo.png" alt="PharmaSys"></div>
+      <div>
+        <div class="sb-name">PharmaSys</div>
+        <div class="sb-sub">Point of Sale</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">
+        <div class="sb-lbl">Overview</div>
+        <button class="sb-item active" id="nav-dash" onclick="go('dash')">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+      </div>
+
+      <div class="sb-group" style="margin-top:4px">
+        <div class="sb-lbl">Cashier</div>
+        <button class="sb-item dim">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Point of Sale
+          <span class="sb-item-right">POS</span>
+        </button>
+        <button class="sb-item dim">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Sales Register
+        </button>
+      </div>
+
+      <div class="sb-group" style="margin-top:4px">
+        <div class="sb-lbl">Stock</div>
+        <button class="sb-item" id="nav-entry" onclick="go('entry')">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Stock Entry
+        </button>
+        <button class="sb-item" id="nav-inv" onclick="go('inv')">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Inventory
+        </button>
+        <button class="sb-item dim">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Suppliers
+        </button>
+      </div>
+
+      <div class="sb-group" style="margin-top:4px">
+        <div class="sb-lbl">Reports</div>
+        <button class="sb-item dim">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Sales Analytics
+        </button>
+        <button class="sb-item dim">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Daily Report
+        </button>
+      </div>
+
+      <div class="sb-group" style="margin-top:4px">
+        <div class="sb-lbl">System</div>
+        <button class="sb-item dim">
+          <svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M19.07 4.93l-14.14 14.14"/></svg>
+          Settings
+        </button>
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-foot-row">
+        <span class="sb-foot-dot"></span>
+        <span class="sb-foot-txt">PharmaSys AI &mdash; online</span>
+      </div>
+      <div class="sb-user">
+        <div class="sb-avatar">KH</div>
+        <div>
+          <div class="sb-uname">Khaoula</div>
+          <div class="sb-urole">Pharmacist</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ────────────────────────────────────────────────── -->
+  <div class="main">
+    <header class="topbar">
+      <span class="tb-title" id="tb-title">Dashboard</span>
+      <span class="tb-sep">/</span>
+      <span class="tb-sub" id="tb-sub">Overview</span>
+      <div class="tb-space"></div>
+      <span class="tb-time" id="tb-clock"></span>
+      <div class="ai-pill" style="margin-left:12px">
+        <span class="ai-dot"></span>PharmaSys AI
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ─ Dashboard ──────────────────────────────────────────── -->
+      <div class="page active" id="page-dash">
+        <div class="kpi-row">
+          <div class="card kpi">
+            <div class="kpi-lbl">Today&rsquo;s Revenue</div>
+            <div class="kpi-val">4,820 <span style="font-size:14px;font-weight:500;color:var(--text-3)">MAD</span></div>
+            <div class="kpi-sub"><span class="kpi-up">+12%</span> vs yesterday</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-lbl">Transactions</div>
+            <div class="kpi-val" id="kpi-tx">47</div>
+            <div class="kpi-sub">Since 08:00</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-lbl">Items Dispensed</div>
+            <div class="kpi-val">163</div>
+            <div class="kpi-sub">Across all products</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-lbl">Stock SKUs</div>
+            <div class="kpi-val" id="kpi-skus">5</div>
+            <div class="kpi-sub"><span class="kpi-dn" id="kpi-alerts">2 alerts</span></div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <!-- Recent transactions -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Recent Transactions</div><div class="cs">Today</div></div>
+              <span class="badge b-gray">#0047 current</span>
+            </div>
+            <div class="tx-row">
+              <span class="tx-id">#0047</span>
+              <span class="tx-name">Doliprane 1000mg</span>
+              <span class="tx-qty">×2</span>
+              <span class="tx-amt">17.00 MAD</span>
+              <span class="tx-time">13:41</span>
+            </div>
+            <div class="tx-row">
+              <span class="tx-id">#0046</span>
+              <span class="tx-name">Ibuprofene 400mg</span>
+              <span class="tx-qty">×1</span>
+              <span class="tx-amt">9.75 MAD</span>
+              <span class="tx-time">13:28</span>
+            </div>
+            <div class="tx-row">
+              <span class="tx-id">#0045</span>
+              <span class="tx-name">Amoxicilline 500mg + Doliprane 1g</span>
+              <span class="tx-qty">×3</span>
+              <span class="tx-amt">36.50 MAD</span>
+              <span class="tx-time">12:55</span>
+            </div>
+            <div class="tx-row">
+              <span class="tx-id">#0044</span>
+              <span class="tx-name">Metformine 850mg</span>
+              <span class="tx-qty">×2</span>
+              <span class="tx-amt">11.00 MAD</span>
+              <span class="tx-time">12:30</span>
+            </div>
+            <div class="tx-row">
+              <span class="tx-id">#0043</span>
+              <span class="tx-name">Omeprazole 20mg</span>
+              <span class="tx-qty">×1</span>
+              <span class="tx-amt">11.25 MAD</span>
+              <span class="tx-time">11:47</span>
+            </div>
+            <div class="tx-row">
+              <span class="tx-id">#0042</span>
+              <span class="tx-name">Doliprane 1000mg</span>
+              <span class="tx-qty">×4</span>
+              <span class="tx-amt">34.00 MAD</span>
+              <span class="tx-time">11:12</span>
+            </div>
+          </div>
+
+          <!-- Alerts -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Stock Alerts</div><div class="cs">Requires attention</div></div>
+              <span class="badge b-red">2</span>
+            </div>
+            <div class="alert-item">
+              <div class="alert-icon ai-red">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 7 13.5 15.5 8.5 10.5 1 17"/><polyline points="17 7 23 7 23 13"/></svg>
+              </div>
+              <div>
+                <div class="alert-name">Amoxicilline 500mg</div>
+                <div class="alert-detail">36 units remaining &mdash; reorder threshold: 50</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-icon ai-amber">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div>
+                <div class="alert-name">Omeprazole 20mg</div>
+                <div class="alert-detail">Expires Nov 2025 &mdash; 60 days remaining</div>
+              </div>
+            </div>
+            <div style="padding:14px 16px;border-top:1px solid var(--border-lt)">
+              <button class="btn btn-green btn-sm" style="width:100%" onclick="go('entry')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Scan a Delivery Receipt
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ Stock Entry ─────────────────────────────────────────── -->
+      <div class="page" id="page-entry">
+        <div class="pg-hd">
+          <h1 class="pg-title">Stock Entry</h1>
+          <p class="pg-desc">Scan a supplier delivery receipt &mdash; PharmaSys AI reads, extracts, and validates every field.</p>
+        </div>
+
+        <div class="card" id="scan-card">
+
+          <!-- upload -->
+          <div id="state-upload">
+            <div class="ch">
+              <div><div class="ct">Upload Receipt</div><div class="cs">Bon de livraison or supplier invoice</div></div>
+              <span class="badge b-blue">AI-Powered OCR</span>
+            </div>
+            <div class="cb">
+              <div class="drop" id="drop-zone">
+                <input type="file" id="file-input" accept="image/*" onchange="onFile(this.files[0])">
+                <div class="drop-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+                    <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                  </svg>
+                </div>
+                <div class="drop-title">Drop receipt image here, or click to browse</div>
+                <div class="drop-hint">PharmaSys AI will extract and validate every field</div>
+                <div class="drop-fmts">JPG &middot; PNG &middot; TIFF &middot; BMP &middot; WebP</div>
+              </div>
+              <div class="err-bar" id="upload-err"></div>
+            </div>
+          </div>
+
+          <!-- preview -->
+          <div id="state-preview" style="display:none">
+            <div class="ch">
+              <div><div class="ct">Review Document</div><div class="cs">Confirm this is the correct receipt before processing</div></div>
+              <span class="badge b-gray" id="preview-badge">—</span>
+            </div>
+            <div class="cb">
+              <div class="preview-wrap">
+                <div class="preview-img-box">
+                  <img id="preview-img" src="" alt="Receipt preview">
+                </div>
+                <div class="preview-meta">
+                  <div class="preview-field">
+                    <div class="preview-lbl">File name</div>
+                    <div class="preview-val mono" id="preview-name">—</div>
+                  </div>
+                  <div class="preview-field">
+                    <div class="preview-lbl">File size</div>
+                    <div class="preview-val" id="preview-size">—</div>
+                  </div>
+                  <div class="preview-field">
+                    <div class="preview-lbl">Type</div>
+                    <div class="preview-val" id="preview-type">—</div>
+                  </div>
+                  <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+                    <button class="btn btn-green btn-lg" style="width:100%;justify-content:center" onclick="startProcessing()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      Process Receipt
+                    </button>
+                    <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="resetScan()">Choose another file</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- processing -->
+          <div id="state-proc" style="display:none">
+            <div class="ch"><div class="ct">Analyzing Document</div><span class="badge b-gray">Processing</span></div>
+            <div class="proc on">
+              <div class="proc-title">PharmaSys AI is processing your receipt&hellip;</div>
+              <div class="steps">
+                <div class="step" id="ps-1"><div class="step-icon" id="pi-1">1</div><div class="step-label">Document received</div></div>
+                <div class="step-conn"></div>
+                <div class="step" id="ps-2"><div class="step-icon" id="pi-2">2</div><div class="step-label">OCR scanning</div></div>
+                <div class="step-conn"></div>
+                <div class="step" id="ps-3"><div class="step-icon" id="pi-3">3</div><div class="step-label">PharmaSys AI field extraction</div></div>
+                <div class="step-conn"></div>
+                <div class="step" id="ps-4"><div class="step-icon" id="pi-4">4</div><div class="step-label">Confidence validation complete</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- results -->
+          <div id="state-results" style="display:none">
+            <div class="ch">
+              <div><div class="ct">Extraction Results</div><div class="cs" id="res-sub">Review and edit fields before saving</div></div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="resetScan()">Scan another</button>
+              </div>
+            </div>
+            <div class="cb">
+              <div class="conf-bar">
+                <div class="conf-seg"><div class="conf-val cv-ok" id="ok-count">0</div><div class="conf-lbl">Confirmed fields</div></div>
+                <div class="conf-seg"><div class="conf-val cv-bad" id="bad-count">0</div><div class="conf-lbl">Need review</div></div>
+                <div class="conf-seg"><div class="conf-val" id="avg-conf" style="color:var(--text)">—</div><div class="conf-lbl">Avg confidence</div></div>
+              </div>
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Product Name</th><th>Qty</th><th>Batch No.</th><th>Expiry Date</th><th>Unit Price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="res-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="save-bar on">
+              <div class="save-note"><strong id="save-count">0 items</strong> ready &mdash; red fields can be edited before saving</div>
+              <button class="btn btn-green btn-lg" onclick="saveToInventory()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Confirm &amp; Save to Inventory
+              </button>
+            </div>
+          </div>
+
+          <!-- success -->
+          <div id="state-success" style="display:none">
+            <div class="success-block on">
+              <div class="success-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="success-title">Inventory Updated</div>
+              <div class="success-sub" id="success-sub"></div>
+              <div style="display:flex;gap:10px;justify-content:center;margin-top:20px">
+                <button class="btn btn-ghost" onclick="resetScan()">Scan another receipt</button>
+                <button class="btn btn-green" onclick="go('inv')">View Inventory</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ─ Inventory ────────────────────────────────────────────── -->
+      <div class="page" id="page-inv">
+        <div class="inv-hd">
+          <div>
+            <h1 class="pg-title">Inventory</h1>
+            <p class="pg-desc" id="inv-desc">Current stock</p>
+          </div>
+          <button class="btn btn-green btn-sm" onclick="go('entry')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Scan Receipt
+          </button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Product Name</th><th>Qty</th><th>Batch No.</th><th>Expiry Date</th><th>Unit Price</th><th>Status</th></tr>
+              </thead>
+              <tbody id="inv-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  const API            = '/api';
+  const CONF_THRESHOLD = 0.75;
+
+  // ── Inventory data ──────────────────────────────────────────
+  let invData = [
+    { id:1, name:'Doliprane 1000mg',   qty:'48',  batch:'DL2024A', expiry:'2025-12-01', price:'8.50',  isNew:false },
+    { id:2, name:'Amoxicilline 500mg', qty:'36',  batch:'AM2024B', expiry:'2026-03-01', price:'12.00', isNew:false },
+    { id:3, name:'Ibuprofene 400mg',   qty:'60',  batch:'IB2024C', expiry:'2026-06-01', price:'9.75',  isNew:false },
+    { id:4, name:'Metformine 850mg',   qty:'120', batch:'MF2024A', expiry:'2026-01-01', price:'5.50',  isNew:false },
+    { id:5, name:'Omeprazole 20mg',    qty:'90',  batch:'OM2024D', expiry:'2025-11-01', price:'11.25', isNew:false },
+  ];
+  let nextId = 6, scanCount = 0, extracted = [];
+
+  // ── Navigation ──────────────────────────────────────────────
+  const PAGES  = ['dash','entry','inv'];
+  const TITLES = { dash:'Dashboard', entry:'Stock Entry', inv:'Inventory' };
+  const SUBS   = { dash:'Overview',  entry:'Receipt Scan', inv:'Current Stock' };
+
+  function go(p) {
+    PAGES.forEach(id => {
+      document.getElementById('page-'+id).classList.toggle('active', id===p);
+      const n = document.getElementById('nav-'+id);
+      if (n) n.classList.toggle('active', id===p);
+    });
+    document.getElementById('tb-title').textContent = TITLES[p];
+    document.getElementById('tb-sub').textContent   = SUBS[p];
+    if (p==='inv')  renderInventory();
+    if (p==='dash') updateDash();
+  }
+
+  // ── Clock ───────────────────────────────────────────────────
+  function tick() {
+    const now = new Date();
+    document.getElementById('tb-clock').textContent =
+      now.toLocaleDateString('fr-MA') + '  ' +
+      now.toLocaleTimeString('fr-MA', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ── Drag & drop ─────────────────────────────────────────────
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+  });
+
+  // ── File handler ────────────────────────────────────────────
+  let pendingFile = null;
+
+  function onFile(file) {
+    if (!file) return;
+    hideErr();
+    pendingFile = file;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('preview-img').src   = e.target.result;
+      document.getElementById('preview-name').textContent = file.name;
+      document.getElementById('preview-size').textContent = formatBytes(file.size);
+      document.getElementById('preview-type').textContent = file.type || 'image';
+      document.getElementById('preview-badge').textContent = formatBytes(file.size);
+      showState('preview');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function startProcessing() {
+    if (!pendingFile) return;
+    showState('proc');
+    const fd = new FormData();
+    fd.append('file', pendingFile);
+    runScan(fd);
+  }
+
+  function formatBytes(b) {
+    if (b < 1024)       return b + ' B';
+    if (b < 1024*1024)  return (b/1024).toFixed(1) + ' KB';
+    return (b/(1024*1024)).toFixed(1) + ' MB';
+  }
+
+  async function runScan(fd) {
+    setStep(1,'done');
+
+    // Start API call immediately
+    const call = fetch(API+'/receipt/upload', { method:'POST', body:fd }).catch(()=>null);
+
+    setStep(2,'active');
+    await delay(900);
+    setStep(2,'done');
+
+    setStep(3,'active');
+    const res  = await call;
+    const data = res ? await res.json().catch(()=>null) : null;
+
+    if (!data || !data.success) {
+      showState('upload');
+      showErr(data ? (data.error||'Processing failed') : 'Cannot reach backend. Make sure it is running on port 5002.');
+      return;
+    }
+
+    setStep(3,'done');
+    await delay(400);
+    setStep(4,'active');
+    await delay(350);
+    setStep(4,'done');
+    await delay(350);
+
+    extracted = data.items || [];
+    scanCount++;
+    showResults(extracted);
+    showState('results');
+  }
+
+  // ── Processing step helpers ──────────────────────────────────
+  function setStep(n, state) {
+    const s = document.getElementById('ps-'+n);
+    const i = document.getElementById('pi-'+n);
+    s.className = 'step '+state;
+    if (state==='active') {
+      i.innerHTML = '<div class="spin-sm"></div>';
+    } else if (state==='done') {
+      i.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      i.textContent = n;
+    }
+  }
+
+  // ── Results ──────────────────────────────────────────────────
+  function showResults(items) {
+    const fields = ['medicine_name','quantity','batch_number','expiry_date','unit_price'];
+    let ok=0, bad=0, total=0;
+    items.forEach(item => fields.forEach(f => {
+      total++;
+      if ((item[f+'_confidence']||0) >= CONF_THRESHOLD) ok++; else bad++;
+    }));
+
+    document.getElementById('ok-count').textContent  = ok;
+    document.getElementById('bad-count').textContent = bad;
+    document.getElementById('avg-conf').textContent  = total ? Math.round((ok/total)*100)+'%' : '—';
+    document.getElementById('save-count').textContent = items.length+' item'+(items.length!==1?'s':'');
+    document.getElementById('res-sub').textContent   = items.length+' item'+(items.length!==1?'s':'')+' extracted — click any red field to correct it';
+
+    const tbody = document.getElementById('res-tbody');
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:28px;text-align:center;color:var(--text-3)">No items extracted. Try a clearer image.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = items.map(item => `<tr>
+      ${cc(item.medicine_name, item.medicine_name_confidence)}
+      ${cc(item.quantity, item.quantity_confidence)}
+      ${cc(item.batch_number, item.batch_number_confidence)}
+      ${cc(item.expiry_date, item.expiry_date_confidence)}
+      ${cc(item.unit_price ? item.unit_price+' MAD' : '', item.unit_price_confidence)}
+    </tr>`).join('');
+  }
+
+  function cc(value, confidence) {
+    const c   = confidence || 0;
+    const cls = c >= CONF_THRESHOLD ? 'c-ok' : 'c-bad';
+    const pct = Math.round(c * 100);
+    const arr = c >= CONF_THRESHOLD ? '&#9650;' : '&#9660;';
+    return `<td class="cc ${cls}"><div class="cc-inner">
+      <input class="cell-input" value="${esc(value)}" data-orig="${esc(value)}" oninput="onEdit(this)" placeholder="—">
+      <span class="cpct">${arr} ${pct}%</span>
+    </div></td>`;
+  }
+
+  function onEdit(input) {
+    const td = input.closest('td');
+    td.classList.toggle('edited', input.value !== input.dataset.orig);
+  }
+
+  // ── Save ─────────────────────────────────────────────────────
+  function saveToInventory() {
+    const rows = document.querySelectorAll('#res-tbody tr');
+    const newItems = Array.from(rows).map((row, i) => {
+      const inputs = row.querySelectorAll('.cell-input');
+      const vals   = Array.from(inputs).map(inp => inp.value.replace(/ MAD$/, '').trim());
+      return {
+        id:    nextId++,
+        name:  vals[0] || extracted[i]?.medicine_name  || '—',
+        qty:   vals[1] || extracted[i]?.quantity        || '—',
+        batch: vals[2] || extracted[i]?.batch_number    || '—',
+        expiry: vals[3] || extracted[i]?.expiry_date    || '—',
+        price: vals[4] || extracted[i]?.unit_price      || '—',
+        isNew: true,
+      };
+    }).filter(item => item.name && item.name !== '—');
+
+    invData = [...newItems, ...invData];
+    const count = newItems.length;
+    document.getElementById('success-sub').textContent =
+      count+' item'+(count!==1?'s':'')+' added to inventory successfully.';
+    showState('success');
+    setTimeout(() => { invData.forEach(i => { i.isNew = false; }); }, 5000);
+  }
+
+  // ── Inventory renderer ────────────────────────────────────────
+  function renderInventory() {
+    document.getElementById('inv-desc').textContent =
+      invData.length+' product'+(invData.length!==1?'s':'')+' in stock';
+    document.getElementById('inv-tbody').innerHTML = invData.map((item, idx) => `
+      <tr class="${item.isNew ? 'inv-row-new' : ''}">
+        <td class="muted">${idx+1}</td>
+        <td style="font-weight:500">${esc(item.name)}</td>
+        <td>${esc(item.qty)}</td>
+        <td class="mono">${esc(item.batch)}</td>
+        <td>${esc(item.expiry)}</td>
+        <td>${item.price && item.price!=='—' ? esc(item.price)+' MAD' : '—'}</td>
+        <td>${item.isNew
+          ? '<span class="badge b-new">NEW</span>'
+          : '<span class="badge b-gray">In Stock</span>'}</td>
+      </tr>`).join('');
+  }
+
+  // ── State switcher ────────────────────────────────────────────
+  function showState(s) {
+    ['upload','preview','proc','results','success'].forEach(id => {
+      document.getElementById('state-'+id).style.display = id===s ? '' : 'none';
+    });
+  }
+
+  function resetScan() {
+    document.getElementById('file-input').value = '';
+    document.getElementById('preview-img').src = '';
+    extracted = []; pendingFile = null;
+    [1,2,3,4].forEach(n => {
+      document.getElementById('ps-'+n).className = 'step';
+      document.getElementById('pi-'+n).textContent = n;
+    });
+    showState('upload'); hideErr();
+  }
+
+  function showErr(msg) { const e=document.getElementById('upload-err'); e.textContent=msg; e.classList.add('on'); }
+  function hideErr()    { document.getElementById('upload-err').classList.remove('on'); }
+  function esc(s)       { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function delay(ms)    { return new Promise(r=>setTimeout(r,ms)); }
+
+  function updateDash() {
+    document.getElementById('kpi-skus').textContent = invData.length;
+  }
+
+  renderInventory();
+</script>
+</body>
+</html>
